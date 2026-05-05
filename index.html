@@ -192,7 +192,7 @@
     }
 
     .blank-input {
-      width: 80px;
+      width: 120px;
       padding: 0.5rem;
       border: 2px dashed var(--gray-300);
       border-radius: 1rem;
@@ -353,12 +353,23 @@
       let probs = [];
       for (let i = 0; i < count; i++) {
         let base = params.factors[rand(0, params.factors.length-1)] * rand(2,8);
+        if (base % 2 !== 0) base++; // Ensure base is even for clean halving
         let multiplier = rand(2,6);
-        let left = base * multiplier;
-        let rightBase = (Math.random() < 0.5) ? base * 2 : Math.round(base / 2);
-        if (rightBase < 1) rightBase = base * 2;
-        let answer = left / rightBase;
-        if (!Number.isInteger(answer) || answer < 1) { answer = rand(2,8); rightBase = left / answer; }
+        
+        let left, rightBase, answer;
+        if (Math.random() < 0.5) {
+          // Halve the base, double the multiplier
+          left = base * multiplier;
+          rightBase = base / 2;
+          answer = multiplier * 2;
+        } else {
+          // Double the base, halve the multiplier
+          if (multiplier % 2 !== 0) multiplier++; // Ensure multiplier is even
+          left = base * multiplier;
+          rightBase = base * 2;
+          answer = multiplier / 2;
+        }
+        
         probs.push({ text: `${base} × ${multiplier} = ${rightBase} × ___`, answer, type: 'number' });
       }
       return probs;
@@ -394,7 +405,7 @@
       for (let i=0; i<count; i++) {
         let n = nums[rand(0, nums.length-1)];
         let isPrime = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47].includes(n);
-        probs.push({ text: `Is ${n} prime or composite?`, answer: isPrime ? 'prime' : 'composite', type: 'text' });
+        probs.push({ text: `Is ${n} prime or composite? ___`, answer: isPrime ? 'prime' : 'composite', type: 'text' });
       }
       return probs;
     }
@@ -405,7 +416,7 @@
         let base = rand(3, 9);
         let wrong = base * rand(5,9) + rand(1, base-1);
         let multiple = base * rand(2,6);
-        probs.push({ text: `Which is NOT a multiple of ${base}? ${base*2}, ${base*3}, ${wrong}, ${base*4}`, answer: wrong.toString(), type: 'text' });
+        probs.push({ text: `Which is NOT a multiple of ${base}? (${base*2}, ${base*3}, ${wrong}, ${base*4}) ___`, answer: wrong.toString(), type: 'text' });
       }
       return probs;
     }
@@ -429,7 +440,7 @@
       let probs = [];
       for (let i=0; i<count; i++) {
         let l = rand(4,12), w = rand(3,8);
-        probs.push({ text: `Rectangle ${l}×${w}. Area = ___ , Perimeter = ___`, answer: `${l*w},${2*(l+w)}`, type: 'text' });
+        probs.push({ text: `Rectangle ${l}×${w}. Area,Perimeter (e.g. 20,18) = ___`, answer: `${l*w},${2*(l+w)}`, type: 'text' });
       }
       return probs;
     }
@@ -437,8 +448,8 @@
     function generateTrueFalse(count) {
       let probs = [];
       const items = [
-        {text:"16 × 5 = 8 × 10", ans:"true"}, {text:"30 × 4 = (30 × 5) − 30", ans:"true"},
-        {text:"9 × 13 = (9 × 10) + 3", ans:"false"}, {text:"25 × 8 = 50 × 4", ans:"true"}
+        {text:"16 × 5 = 8 × 10 (true/false) ___", answer:"true", type:"text"}, {text:"30 × 4 = (30 × 5) − 30 (true/false) ___", answer:"true", type:"text"},
+        {text:"9 × 13 = (9 × 10) + 3 (true/false) ___", answer:"false", type:"text"}, {text:"25 × 8 = 50 × 4 (true/false) ___", answer:"true", type:"text"}
       ];
       for (let i=0; i<count; i++) probs.push(items[rand(0,items.length-1)]);
       return probs;
